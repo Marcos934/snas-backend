@@ -1,9 +1,9 @@
-import { Body, Injectable } from '@nestjs/common';
+import { Body, Injectable, OnModuleInit } from '@nestjs/common';
 import { RabbitmqService } from 'src/rabbitmq/rabbitmq.service';
 import { NotificationDto } from './dto/notification.dto';
 
 @Injectable()
-export class NotificationService {
+export class NotificationService implements OnModuleInit {
     // Map para armazenar status das mensagens em memória
     private statusMensagens = new Map<string, string>();
     
@@ -11,6 +11,11 @@ export class NotificationService {
         private readonly rabbitmqService: RabbitmqService,
     ) { }
 
+   
+    // Inicializa o consumer
+    async onModuleInit() {
+        await this.iniciarConsumerNotificacoes();
+    }
 
     /**
      * Publica uma mensagem na fila de entrada para processamento
@@ -19,9 +24,8 @@ export class NotificationService {
         return await this.rabbitmqService.publish(body);
     }
 
-    /**
-     * Consulta o status de uma mensagem específica
-     */
+    
+    // Consulta o status por mensagemId
     async consultaStatus(mensagemId: string) {
         console.log('Consultando status para:', mensagemId);
         
@@ -40,6 +44,14 @@ export class NotificationService {
             status,
             timestamp: new Date().toISOString()
         };
+    }
+
+    // Aqui faz o consumo da fila
+    private async iniciarConsumerNotificacoes() {
+        const filaEntrada = 'fila.notificacao.entrada.MULINARI';
+        await this.rabbitmqService.consume(filaEntrada, async (message) => {
+            await this.processarMensagem(message);
+        });
     }
 
     // Processa uma mensagem individual e Simula processamento real com delay e chance de falha

@@ -20,8 +20,17 @@ export class GetwayController {
     }
 
     @Get("notificar/status/:id")
-    getNotificar(@Param("id") id: string) {
-       return "Rota teste " + id;
+    async getNotificar(@Param("id") id: string) {
+        try {
+            const result = await this.getservice.consultaStatus(id);
+            return result;
+        } catch (error) {
+            console.error('Erro ao consultar status:', error);
+            throw new HttpException(
+                'Erro interno do servidor',
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
     }
     
 

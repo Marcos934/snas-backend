@@ -59,7 +59,7 @@ export class RabbitmqService implements OnModuleInit {
     }
 
 
-      
+
     //Publica mensagem em uma fila específica
     async publishToQueue(queueName: string, message: any) {
         try {
@@ -79,6 +79,33 @@ export class RabbitmqService implements OnModuleInit {
 
         } catch (error) {
             throw new HttpException(`Erro ao publicar na fila ${queueName}: ` + error.message, 500);
+        }
+    }
+
+    //consumer 
+    async consume(queue: string, callback: (message: any) => void) {
+        try {
+            if (!this.channel) {
+                await this.connect();
+            }
+            
+            await this.channel.assertQueue(queue, { durable: true });
+            await this.channel.consume(queue, (message) => {
+                if (message) {
+                    try {
+                        // Try-catch interno para parsing
+                        const parsedMessage = JSON.parse(message.content.toString());
+                        callback(parsedMessage);
+                        this.channel.ack(message);
+                    } catch (parseError) {
+                        console.error('Erro ao fazer parse da mensagem:', parseError);
+                        // Rejeitar mensagem malformada
+                        this.channel.nack(message, false, false);
+                    }
+                }
+            });
+        } catch (error) {
+            throw new HttpException('Erro ao consumir a fila: ' + error.message, 500);
         }
     }
   
