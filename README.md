@@ -1,98 +1,172 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# SNAS Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Sistema de notificações assíncronas desenvolvido em NestJS com RabbitMQ para processamento de mensagens em fila.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Descrição do Sistema
 
-## Description
+O SNAS Backend é uma API REST que gerencia o envio e consulta de notificações através de um sistema de filas usando RabbitMQ. O sistema permite:
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- **Envio de notificações**: Recebe mensagens via API e as envia para processamento assíncrono
+- **Consulta de status**: Permite verificar o status de processamento das mensagens enviadas
+- **Processamento assíncrono**: Utiliza RabbitMQ para garantir que as mensagens sejam processadas de forma confiável
 
-## Project setup
+## Requisitos
 
+- **Node.js** 18+ 
+- **Docker** e **Docker Compose**
+- **npm** ou **yarn**
+
+## Configuração e Execução
+
+### 1. Clonar o repositório
 ```bash
-$ npm install
+git clone <url-do-repositorio>
+cd snas-backend
 ```
 
-## Compile and run the project
-
+### 2. Instalar dependências
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
 ```
 
-## Run tests
-
+### 3. Subir o RabbitMQ com Docker
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+docker-compose up -d
 ```
 
-## Deployment
+Isso irá inicializar:
+- **RabbitMQ**: Porta 5672 (AMQP) e 15672 (Interface Web)
+- **Credenciais**: admin/admin
+- **Interface Web**: http://localhost:15672
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### 4. Executar a aplicação
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
+#### Desenvolvimento
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm run start:dev
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+#### Produção
+```bash
+npm run build
+npm run start:prod
+```
 
-## Resources
+A API estará disponível em: **http://localhost:3000**
 
-Check out a few resources that may come in handy when working with NestJS:
+## Endpoints da API
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### POST /api/notificar
+Envia uma nova notificação para processamento.
 
-## Support
+**Body:**
+```json
+{
+  "mensagemId": "550e8400-e29b-41d4-a716-446655440000",
+  "conteudoMensagem": "Sua mensagem aqui"
+}
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+**Resposta:**
+```json
+{
+  "status": "success",
+  "mensagemId": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
 
-## Stay in touch
+### GET /api/notificar/status/:id
+Consulta o status de processamento de uma mensagem.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+**Parâmetros:**
+- `id`: UUID da mensagem
 
-## License
+**Resposta:**
+```json
+{
+  "mensagemId": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "processando|concluido|erro",
+  "timestamp": "2024-01-01T00:00:00.000Z"
+}
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## Estrutura do Projeto
+
+```
+src/
+├── gateway/           # Módulo principal da API
+│   ├── dto/          # Data Transfer Objects
+│   ├── gateway.controller.ts
+│   ├── gateway.service.ts
+│   └── gateway.module.ts
+├── rabbitmq/         # Configuração do RabbitMQ
+├── worker/           # Processadores de mensagens
+│   └── notification/ # Worker de notificações
+└── main.ts          # Ponto de entrada da aplicação
+```
+
+## Scripts Disponíveis
+
+```bash
+# Desenvolvimento com hot-reload
+npm run start:dev
+
+# Build para produção
+npm run build
+
+# Executar em produção
+npm run start:prod
+```
+
+## Configurações
+
+### CORS
+A aplicação está configurada para aceitar requisições do frontend em `http://localhost:4200`.
+
+### Validação
+Todas as requisições são validadas automaticamente usando class-validator:
+- `mensagemId`: Deve ser um UUID v4 válido
+- `conteudoMensagem`: String obrigatória e não vazia
+
+## Monitoramento
+
+### RabbitMQ Management
+Acesse http://localhost:15672 para monitorar:
+- Filas de mensagens
+- Conexões ativas
+- Taxa de processamento
+- Status geral do sistema
+
+### Logs da Aplicação
+Os logs são exibidos no console durante a execução e incluem:
+- Requisições HTTP
+- Erros de processamento
+- Status das conexões com RabbitMQ
+
+## Desenvolvimento
+
+### Adicionando Novos Endpoints
+1. Adicione métodos no `GatewayController`
+2. Implemente a lógica no `GatewayService`
+3. Crie DTOs para validação se necessário
+
+### Adicionando Novos Workers
+1. Crie um novo módulo em `src/worker/`
+2. Implemente o processador de mensagens
+3. Registre no módulo principal
+
+## Troubleshooting
+
+### RabbitMQ não conecta
+- Verifique se o Docker está rodando
+- Execute `docker-compose up -d` novamente
+- Verifique se as portas 5672 e 15672 estão livres
+
+### Erro de validação
+- Certifique-se de que o `mensagemId` é um UUID v4 válido
+- Verifique se `conteudoMensagem` não está vazio
+
+### Aplicação não inicia
+- Verifique se o Node.js 18+ está instalado
+- Execute `npm install` novamente
+- Verifique se a porta 3000 está livre
