@@ -20,7 +20,7 @@ O SNAS Backend é uma API REST que gerencia o envio e consulta de notificações
 
 ### 1. Clonar o repositório
 ```bash
-git clone <url-do-repositorio>
+git clone https://github.com/Marcos934/snas-backend
 cd snas-backend
 ```
 
@@ -118,6 +118,96 @@ npm run build
 npm run start:prod
 ```
 
+## 🎯 Fluxo Detalhado Passo a Passo
+
+### 1. 📤 **Envio da Mensagem**
+```
+[Cliente] 
+    ↓ POST /api/notificar
+    ↓ { mensagemId: "uuid", conteudoMensagem: "texto" }
+[GatewayController.notificar()]
+    ↓ Valida dados (UUID v4, string não vazia)
+[GatewayService.notificar()]
+    ↓ Repassa para NotificationService
+[NotificationService.notificar()]
+    ↓ Chama RabbitMQ Service
+[RabbitmqService.publish()]
+    ↓ Publica na fila
+[fila.notificacao.entrada.MULINARI]
+```
+
+**Resposta ao Cliente:**
+```json
+{
+  "statusCode": 202,
+  "success": true,
+  "message": "Mensagem enviada para processamento com sucesso"
+}
+```
+
+---
+
+### 2. ⚙️ **Processamento Assíncrono**
+```
+[fila.notificacao.entrada.MULINARI]
+    ↓ Consumer ativo (inicializado no onModuleInit)
+[NotificationService.processarMensagem()]
+    ↓ Simula processamento (3-4 segundos)
+    ↓ Gera resultado aleatório (80% sucesso, 20% falha)
+    ↓ Armazena status em memória (Map)
+[NotificationService.publicarStatusProcessamento()]
+    ↓ Publica resultado na fila de status
+[fila.notificacao.status.MULINARI]
+```
+
+**Status Possíveis:**
+- `PROCESSADO_SUCESSO` (80% dos casos)
+- `FALHA_PROCESSAMENTO` (20% dos casos)
+- `ERRO_PROCESSAMENTO` (em caso de exceção)
+
+---
+
+### 3. 🔍 **Consulta de Status**
+```
+[Cliente]
+    ↓ GET /api/notificar/status/{uuid}
+[GatewayController.getNotificar()]
+    ↓ Valida UUID com ParseUUIDPipe
+[GatewayService.consultaStatus()]
+    ↓ Repassa para NotificationService
+[NotificationService.consultaStatus()]
+    ↓ Consulta Map em memória
+    ↓ Retorna status ou "NAO_ENCONTRADO"
+[Cliente recebe resposta]
+```
+
+**Resposta Típica:**
+```json
+{
+  "mensagemId": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "PROCESSADO_SUCESSO",
+  "timestamp": "2024-01-15T10:30:45.123Z"
+}
+```
+
+---
+
+## 🏗️ Arquitetura dos Componentes
+
+### **Camada Gateway (API)**
+- **GatewayController**: Endpoints REST
+- **GatewayService**: Lógica de negócio da API
+- **GatewayNotificationDto**: Validação de entrada
+
+### **Camada Worker (Processamento)**
+- **NotificationService**: Processamento assíncrono
+- **NotificationDto**: Estrutura de dados interna
+
+### **Camada Infraestrutura**
+- **RabbitmqService**: Comunicação com RabbitMQ
+- **Filas**: Entrada e status de mensagens
+
+---
 ## Configurações
 
 ### CORS
@@ -137,25 +227,8 @@ Acesse http://localhost:15672 para monitorar:
 - Taxa de processamento
 - Status geral do sistema
 
-### Logs da Aplicação
-Os logs são exibidos no console durante a execução e incluem:
-- Requisições HTTP
-- Erros de processamento
-- Status das conexões com RabbitMQ
+---
 
-## Desenvolvimento
-
-### Adicionando Novos Endpoints
-1. Adicione métodos no `GatewayController`
-2. Implemente a lógica no `GatewayService`
-3. Crie DTOs para validação se necessário
-
-### Adicionando Novos Workers
-1. Crie um novo módulo em `src/worker/`
-2. Implemente o processador de mensagens
-3. Registre no módulo principal
-
-## Troubleshooting
 
 ### RabbitMQ não conecta
 - Verifique se o Docker está rodando
