@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-snas
+    ports:
+      - "5672:5672"    # Porta de comunicação AMQP
+      - "15672:15672"   # Porta de gerenciamento (web UI)
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
