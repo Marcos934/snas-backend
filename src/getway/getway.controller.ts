@@ -1,4 +1,4 @@
-import { Controller, Post, Param, Body, Get, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Param, Body, Get, HttpException, HttpStatus, ParseUUIDPipe, HttpCode } from '@nestjs/common';
 import { GetwayService } from './getway.service';
 import { GatewayNotificationDto } from './dto/gateway-notification.dto';
 
@@ -7,6 +7,9 @@ export class GetwayController {
     constructor(
         private readonly getservice: GetwayService,
     ) { }
+
+    //new GatewayNotificationDto
+    private notificationDto = new GatewayNotificationDto();
 
     // enviar msg para o rabbitmq
     @Post("notificar")
@@ -19,8 +22,9 @@ export class GetwayController {
         }
     }
 
+   // Consultar status da mensagem - agora com validação de UUID
     @Get("notificar/status/:id")
-    async getNotificar(@Param("id") id: string) {
+    async getNotificar(@Param("id", ParseUUIDPipe) id: string) {
         try {
             const result = await this.getservice.consultaStatus(id);
             return result;
@@ -29,6 +33,7 @@ export class GetwayController {
             throw new HttpException(
                 'Erro interno do servidor',
                 HttpStatus.INTERNAL_SERVER_ERROR
+
             );
         }
     }

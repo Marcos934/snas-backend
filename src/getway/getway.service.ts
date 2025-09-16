@@ -13,8 +13,9 @@ export class GetwayService {
        return await this.notificationService.notificar(body);
     }
 
-    async consultaStatus(mensagemId: string) {
-        return this.notificationService.consultaStatus(mensagemId);
+    // Usando o type alias
+    async consultaStatus(mensagemId: GatewayNotificationDto['mensagemId']) {
+        return await this.notificationService.consultaStatus(mensagemId);
     }
 
 

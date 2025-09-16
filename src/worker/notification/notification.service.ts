@@ -1,4 +1,4 @@
-import { Body, Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { RabbitmqService } from 'src/rabbitmq/rabbitmq.service';
 import { NotificationDto } from './dto/notification.dto';
 
