@@ -3,7 +3,7 @@ import { NotificationService } from 'src/worker/notification/notification.servic
 import { GatewayNotificationDto } from './dto/gateway-notification.dto';
 import { NotificationDto } from 'src/worker/notification/dto/notification.dto';
 @Injectable()
-export class GetwayService {
+export class GatewayService {
         constructor(
             private readonly notificationService: NotificationService
         ) { }
