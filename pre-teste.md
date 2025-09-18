@@ -50,6 +50,4 @@ npm test gateway.controller.spec.ts
 npm test gateway.service.spec.ts  
 npm test notification.service.spec.ts
 
-# Todos os testes
-npm test
 ```
