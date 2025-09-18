@@ -38,14 +38,9 @@ Sistema de notificações NestJS com RabbitMQ - arquitetura gateway que recebe n
 ## Status atual
 **40 testes unitários implementados e passando**
 
-Arquivos não implementados (fora do escopo):
-- `app.controller.spec.ts` - apenas teste básico existente
-- `rabbitmq.service.spec.ts` - apenas teste básico existente  
-- `app.e2e-spec.ts` - apenas teste básico existente
-
 ## Como executar
 ```bash
-# Testes específicos
+# Comandos:
 npm test gateway.controller.spec.ts
 npm test gateway.service.spec.ts  
 npm test notification.service.spec.ts
